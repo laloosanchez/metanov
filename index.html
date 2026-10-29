@@ -123,10 +123,10 @@
     <div class="teams-grid" id="teams-container"></div>
 
     <script>
-        // SÓLO PEGA TU ENLACE CSV AQUÍ ADENTRO DE LAS COMILLAS SIMPLES
-        const CSV_URL = 'AQUI_TU_ENLACE_CSV_DEL_ARCHIVO_PERSONAL';
+        // Enlace ya corregido al formato CSV
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSfXQNcRKFTsyf4i5dmtN1GIyuU2N6Jr55mEHwq69xQhRazgIqCeCbWAgq_2ccpUncuQnPRcsc0K6xH/pub?output=csv';
 
-        // Diccionario exacto de apodos
+        // Diccionario de apodos
         const apodos = {
             "Alejandra de la Cruz Jimenez": "Ale de la Cruz",
             "Daniel Alejandro Jimenez Ventura": "Daniel",
@@ -185,7 +185,6 @@
                     const equipoPercentRaw = metaEquipo > 0 ? (dfts / metaEquipo) : 0;
                     const equipoPercent = Math.min(equipoPercentRaw * 100, 100);
                     
-                    // Traducción automática del nombre
                     const equipoMostrar = apodos[equipoOriginal] || equipoOriginal;
                     
                     const card = document.createElement('div');
@@ -222,7 +221,7 @@
                 console.error("Error al cargar los datos:", err);
                 document.getElementById('teams-container').innerHTML = `
                     <div style="width: 100%; color: #ef4444; padding: 20px; background: rgba(239,68,68,0.1); border-radius: 8px;">
-                        No se pudieron cargar los datos. Revisa que pegaste el enlace CSV de tu archivo personal.
+                        No se pudieron cargar los datos.
                     </div>`;
             }
         }
