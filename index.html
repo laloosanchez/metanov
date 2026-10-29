@@ -70,6 +70,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            text-align: center;
         }
         .team-stats {
             font-size: 2.2rem;
@@ -117,7 +118,7 @@
     </div>
 
     <div class="percent-text" id="percent-text">Cargando...</div>
-    <div class="target-number">1800</div>
+    <div class="target-number">Meta Total: 1800</div>
 
     <!-- Cuadros de los Equipos -->
     <div class="teams-grid" id="teams-container"></div>
@@ -151,15 +152,8 @@
                 
                 const data = await response.text();
                 
-                const rows = data.split('\n').map(row => {
-                    const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
-                    let arr = [];
-                    let m;
-                    while ((m = regex.exec(row)) !== null) {
-                        arr.push(m[0].replace(/(^"|"$)/g, ''));
-                    }
-                    return arr;
-                });
+                // Procesador CSV corregido para no cortar los espacios
+                const rows = data.split('\\n').map(row => row.split(',').map(item => item.replace(/(^"|"$)/g, '').trim()));
                 
                 let totalDFTs = 0;
                 let totalMetaNacional = 0;
@@ -185,6 +179,7 @@
                     const equipoPercentRaw = metaEquipo > 0 ? (dfts / metaEquipo) : 0;
                     const equipoPercent = Math.min(equipoPercentRaw * 100, 100);
                     
+                    // Traducción automática del nombre
                     const equipoMostrar = apodos[equipoOriginal] || equipoOriginal;
                     
                     const card = document.createElement('div');
@@ -221,7 +216,7 @@
                 console.error("Error al cargar los datos:", err);
                 document.getElementById('teams-container').innerHTML = `
                     <div style="width: 100%; color: #ef4444; padding: 20px; background: rgba(239,68,68,0.1); border-radius: 8px;">
-                        No se pudieron cargar los datos.
+                        No se pudieron cargar los datos. Revisa que pegaste el enlace CSV de tu archivo personal.
                     </div>`;
             }
         }
