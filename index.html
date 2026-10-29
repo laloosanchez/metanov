@@ -118,13 +118,13 @@
     </div>
 
     <div class="percent-text" id="percent-text">Cargando...</div>
-    <div class="target-number">Meta Total: 1800</div>
+    <div class="target-number">1800</div>
 
     <!-- Cuadros de los Equipos -->
     <div class="teams-grid" id="teams-container"></div>
 
     <script>
-        // Enlace ya corregido al formato CSV
+        // Enlace CSV
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSfXQNcRKFTsyf4i5dmtN1GIyuU2N6Jr55mEHwq69xQhRazgIqCeCbWAgq_2ccpUncuQnPRcsc0K6xH/pub?output=csv';
 
         // Diccionario de apodos
@@ -152,8 +152,8 @@
                 
                 const data = await response.text();
                 
-                // Procesador CSV corregido para no cortar los espacios
-                const rows = data.split('\\n').map(row => row.split(',').map(item => item.replace(/(^"|"$)/g, '').trim()));
+                // CORRECCIÓN: Separar correctamente las filas y columnas
+                const rows = data.split('\n').map(row => row.split(',').map(item => item.replace(/(^"|"$)/g, '').trim()));
                 
                 let totalDFTs = 0;
                 let totalMetaNacional = 0;
@@ -216,7 +216,7 @@
                 console.error("Error al cargar los datos:", err);
                 document.getElementById('teams-container').innerHTML = `
                     <div style="width: 100%; color: #ef4444; padding: 20px; background: rgba(239,68,68,0.1); border-radius: 8px;">
-                        No se pudieron cargar los datos. Revisa que pegaste el enlace CSV de tu archivo personal.
+                        No se pudieron cargar los datos.
                     </div>`;
             }
         }
