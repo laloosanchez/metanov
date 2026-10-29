@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tablero de Metas Navideño 🎄</title>
+    <title>Vacaciones Diciembre 🎄🎅</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -14,7 +14,7 @@
             padding: 40px 20px;
         }
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             margin-bottom: 20px;
             color: #e2e8f0;
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
@@ -26,11 +26,18 @@
             height: 270px;
         }
         .percent-text {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: bold;
             color: #4ade80;
-            margin-bottom: 50px;
+            margin-top: 10px;
             text-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
+        }
+        .target-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #cbd5e1;
+            margin-bottom: 50px;
+            letter-spacing: 2px;
         }
         .teams-grid {
             display: flex;
@@ -55,7 +62,7 @@
             background: rgba(255, 255, 255, 0.1);
         }
         .team-name {
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 15px;
             color: #94a3b8;
@@ -93,7 +100,7 @@
 </head>
 <body>
 
-    <h1>Progreso Nacional - Metas Navideñas 🎄</h1>
+    <h1>Vacaciones Diciembre 🎄🎅</h1>
 
     <!-- Árbol de Navidad Animado -->
     <div class="tree-container">
@@ -110,13 +117,30 @@
     </div>
 
     <div class="percent-text" id="percent-text">Cargando...</div>
+    <div class="target-number">1800</div>
 
     <!-- Cuadros de los Equipos -->
     <div class="teams-grid" id="teams-container"></div>
 
     <script>
-        // PEGA AQUÍ EL ENLACE CSV DE TU ARCHIVO PERSONAL
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSfXQNcRKFTsyf4i5dmtN1GIyuU2N6Jr55mEHwq69xQhRazgIqCeCbWAgq_2ccpUncuQnPRcsc0K6xH/pub?gid=0&single=true&output=csv';
+        // SÓLO PEGA TU ENLACE CSV AQUÍ ADENTRO DE LAS COMILLAS SIMPLES
+        const CSV_URL = 'AQUI_TU_ENLACE_CSV_DEL_ARCHIVO_PERSONAL';
+
+        // Diccionario exacto de apodos
+        const apodos = {
+            "Alejandra de la Cruz Jimenez": "Ale de la Cruz",
+            "Daniel Alejandro Jimenez Ventura": "Daniel",
+            "Gabriela Capul": "Gaby",
+            "Hector Manuel Montaño": "Hector",
+            "Jose de Jesus Hernandez Hernandez": "Jesus",
+            "Norma Alejandra Ruiz Diaz": "Ale Ruiz",
+            "Roberto Ivan Lopez Diaz": "Roberto",
+            "Rodolfo Perez Martinez": "Rodolfo",
+            "Vania Nayeli Garcia Ante": "Vania",
+            "Ximena Garcia Juarez": "Xim",
+            "Ismael Pérez Alatorre": "Ismael",
+            "Team Toluca": "Toluca"
+        };
 
         async function loadData() {
             try {
@@ -148,12 +172,12 @@
                     
                     if(!rowData || rowData.length < 4) continue;
                     
-                    const equipo = rowData[0] ? rowData[0].trim() : '';
+                    const equipoOriginal = rowData[0] ? rowData[0].trim() : '';
                     const dfts = parseInt(rowData[1]) || 0;
                     const metaEquipo = parseInt(rowData[2]) || 0;
                     const metaPeriodo = parseInt(rowData[3]) || 0;
                     
-                    if(equipo === '' || metaPeriodo === 0) continue;
+                    if(equipoOriginal === '' || metaPeriodo === 0) continue;
 
                     totalDFTs += dfts;
                     totalMetaNacional += metaPeriodo;
@@ -161,10 +185,13 @@
                     const equipoPercentRaw = metaEquipo > 0 ? (dfts / metaEquipo) : 0;
                     const equipoPercent = Math.min(equipoPercentRaw * 100, 100);
                     
+                    // Traducción automática del nombre
+                    const equipoMostrar = apodos[equipoOriginal] || equipoOriginal;
+                    
                     const card = document.createElement('div');
                     card.className = 'team-card';
                     card.innerHTML = `
-                        <div class="team-name">${equipo}</div>
+                        <div class="team-name">${equipoMostrar}</div>
                         <div class="team-stats">${dfts} / ${metaEquipo}</div>
                         <div class="team-label">DFTs / Meta</div>
                         <div class="progress-bar-bg">
@@ -185,7 +212,7 @@
                 
                 document.getElementById('treeFill').setAttribute('height', fillHeight);
                 document.getElementById('treeFill').setAttribute('y', fillY);
-                document.getElementById('percent-text').innerText = (rawPercent * 100).toFixed(1) + '% de la Meta Nacional';
+                document.getElementById('percent-text').innerText = (rawPercent * 100).toFixed(1) + '%';
                 
                 if (rawPercent >= 1) {
                     document.getElementById('star').setAttribute('fill', '#FFD700'); 
@@ -195,7 +222,7 @@
                 console.error("Error al cargar los datos:", err);
                 document.getElementById('teams-container').innerHTML = `
                     <div style="width: 100%; color: #ef4444; padding: 20px; background: rgba(239,68,68,0.1); border-radius: 8px;">
-                        No se pudieron cargar los datos. Revisa que el enlace CSV esté activo.
+                        No se pudieron cargar los datos. Revisa que pegaste el enlace CSV de tu archivo personal.
                     </div>`;
             }
         }
