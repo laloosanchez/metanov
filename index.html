@@ -59,7 +59,7 @@
             font-weight: 600;
             margin-bottom: 15px;
             color: #94a3b8;
-            height: 45px; /* Para alinear nombres largos */
+            height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -112,17 +112,14 @@
     <div class="percent-text" id="percent-text">Cargando...</div>
 
     <!-- Cuadros de los Equipos -->
-    <div class="teams-grid" id="teams-container">
-        <!-- Javascript insertará las tarjetas aquí -->
-    </div>
+    <div class="teams-grid" id="teams-container"></div>
 
     <script>
-        // ¡SUPER IMPORTANTE! PEGA AQUÍ EL ENLACE CSV DE TU ARCHIVO PERSONAL (EL DESTINO)
-        const CSV_URL = 'AQUI_TU_ENLACE_CSV_DEL_ARCHIVO_PERSONAL';
+        // PEGA AQUÍ EL ENLACE CSV DE TU ARCHIVO PERSONAL
+        const CSV_URL = 'https://script.google.com/macros/s/AKfycbw8_1_bQWZ_hPDgj1KkZES2igAQcoZ2I--yMwSlY4PXCa8sSopms4ZNflSQYa9vv8BKZQ/exec';
 
         async function loadData() {
             try {
-                // Agregar un timestamp para evitar que GitHub guarde el archivo en caché viejo
                 const timestamp = new Date().getTime();
                 const response = await fetch(`${CSV_URL}&t=${timestamp}`);
                 
@@ -130,9 +127,7 @@
                 
                 const data = await response.text();
                 
-                // Limpiar comillas extras y separar filas
                 const rows = data.split('\n').map(row => {
-                    // Expresión regular para separar CSV ignorando comas dentro de comillas
                     const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
                     let arr = [];
                     let m;
@@ -143,16 +138,14 @@
                 });
                 
                 let totalDFTs = 0;
-                let totalMetaNacional = 0; // Basado en META PERIODO
+                let totalMetaNacional = 0;
                 
                 const teamsContainer = document.getElementById('teams-container');
                 teamsContainer.innerHTML = '';
                 
-                // Iterar desde 1 para saltar los encabezados (TEAM LEADER, DFTs, META, META PERIODO)
                 for (let i = 1; i < rows.length; i++) {
                     const rowData = rows[i];
                     
-                    // Asegurarnos de que la fila tenga al menos los 4 datos
                     if(!rowData || rowData.length < 4) continue;
                     
                     const equipo = rowData[0] ? rowData[0].trim() : '';
@@ -160,17 +153,14 @@
                     const metaEquipo = parseInt(rowData[2]) || 0;
                     const metaPeriodo = parseInt(rowData[3]) || 0;
                     
-                    // Si no hay equipo o la meta del periodo es 0, lo saltamos
                     if(equipo === '' || metaPeriodo === 0) continue;
 
                     totalDFTs += dfts;
                     totalMetaNacional += metaPeriodo;
                     
-                    // Calcular el progreso individual de cada equipo para su pequeña barra
                     const equipoPercentRaw = metaEquipo > 0 ? (dfts / metaEquipo) : 0;
                     const equipoPercent = Math.min(equipoPercentRaw * 100, 100);
                     
-                    // Crear tarjeta del equipo
                     const card = document.createElement('div');
                     card.className = 'team-card';
                     card.innerHTML = `
@@ -184,11 +174,9 @@
                     teamsContainer.appendChild(card);
                 }
                 
-                // Calcular progreso nacional para el arbolito
                 const rawPercent = totalMetaNacional > 0 ? (totalDFTs / totalMetaNacional) : 0;
                 const percent = Math.min(rawPercent, 1);
                 
-                // Animar el árbol
                 const maxHeight = 235;
                 const bottomY = 260;
                 
@@ -199,7 +187,6 @@
                 document.getElementById('treeFill').setAttribute('y', fillY);
                 document.getElementById('percent-text').innerText = (rawPercent * 100).toFixed(1) + '% de la Meta Nacional';
                 
-                // Encender la estrella si llegan a la meta nacional
                 if (rawPercent >= 1) {
                     document.getElementById('star').setAttribute('fill', '#FFD700'); 
                 }
@@ -213,10 +200,7 @@
             }
         }
 
-        // Cargar inmediatamente
         loadData();
-        
-        // Refrescar automáticamente cada 3 minutos (180,000 milisegundos)
         setInterval(loadData, 180000);
     </script>
 </body>
