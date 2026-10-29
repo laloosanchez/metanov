@@ -1,1 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tablero de Metas Navideño 🎄</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: #f1f5f9;
+            text-align: center;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #e2e8f0;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+        .tree-container {
+            margin: 0 auto 10px auto;
+            position: relative;
+            width: 200px;
+            height: 270px;
+        }
+        .percent-text {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4ade80;
+            margin-bottom: 50px;
+            text-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
+        }
+        .teams-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .team-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px 20px;
+            width: 180px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .team-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .team-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #94a3b8;
+            height: 45px; /* Para alinear nombres largos */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .team-stats {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        .team-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .progress-bar-bg {
+            background: #334155;
+            height: 6px;
+            border-radius: 3px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            background: #4ade80;
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s ease-in-out;
+        }
+    </style>
+</head>
+<body>
 
+    <h1>Progreso Nacional - Metas Navideñas 🎄</h1>
+
+    <!-- Árbol de Navidad Animado -->
+    <div class="tree-container">
+        <svg width="200" height="270" viewBox="0 0 200 270">
+            <defs>
+                <clipPath id="treeClip">
+                    <path d="M100 25 L125 80 L110 80 L135 135 L115 135 L150 210 L110 210 L110 260 L90 260 L90 210 L50 210 L85 135 L65 135 L90 80 L75 80 Z" />
+                </clipPath>
+            </defs>
+            <path d="M100 25 L125 80 L110 80 L135 135 L115 135 L150 210 L110 210 L110 260 L90 260 L90 210 L50 210 L85 135 L65 135 L90 80 L75 80 Z" fill="#334155" />
+            <rect id="treeFill" x="0" y="260" width="200" height="0" fill="#16a34a" clip-path="url(#treeClip)" style="transition: height 1.5s ease-in-out, y 1.5s ease-in-out;" />
+            <polygon id="star" points="100,0 103,9 111,9 104,14 107,22 100,17 93,22 96,14 89,9 97,9" fill="#475569" style="transition: fill 1s ease;" />
+        </svg>
+    </div>
+
+    <div class="percent-text" id="percent-text">Cargando...</div>
+
+    <!-- Cuadros de los Equipos -->
+    <div class="teams-grid" id="teams-container">
+        <!-- Javascript insertará las tarjetas aquí -->
+    </div>
+
+    <script>
+        // ¡SUPER IMPORTANTE! PEGA AQUÍ EL ENLACE CSV DE TU ARCHIVO PERSONAL (EL DESTINO)
+        const CSV_URL = 'AQUI_TU_ENLACE_CSV_DEL_ARCHIVO_PERSONAL';
+
+        async function loadData() {
+            try {
+                // Agregar un timestamp para evitar que GitHub guarde el archivo en caché viejo
+                const timestamp = new Date().getTime();
+                const response = await fetch(`${CSV_URL}&t=${timestamp}`);
+                
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.text();
+                
+                // Limpiar comillas extras y separar filas
+                const rows = data.split('\n').map(row => {
+                    // Expresión regular para separar CSV ignorando comas dentro de comillas
+                    const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
+                    let arr = [];
+                    let m;
+                    while ((m = regex.exec(row)) !== null) {
+                        arr.push(m[0].replace(/(^"|"$)/g, ''));
+                    }
+                    return arr;
+                });
+                
+                let totalDFTs = 0;
+                let totalMetaNacional = 0; // Basado en META PERIODO
+                
+                const teamsContainer = document.getElementById('teams-container');
+                teamsContainer.innerHTML = '';
+                
+                // Iterar desde 1 para saltar los encabezados (TEAM LEADER, DFTs, META, META PERIODO)
+                for (let i = 1; i < rows.length; i++) {
+                    const rowData = rows[i];
+                    
+                    // Asegurarnos de que la fila tenga al menos los 4 datos
+                    if(!rowData || rowData.length < 4) continue;
+                    
+                    const equipo = rowData[0] ? rowData[0].trim() : '';
+                    const dfts = parseInt(rowData[1]) || 0;
+                    const metaEquipo = parseInt(rowData[2]) || 0;
+                    const metaPeriodo = parseInt(rowData[3]) || 0;
+                    
+                    // Si no hay equipo o la meta del periodo es 0, lo saltamos
+                    if(equipo === '' || metaPeriodo === 0) continue;
+
+                    totalDFTs += dfts;
+                    totalMetaNacional += metaPeriodo;
+                    
+                    // Calcular el progreso individual de cada equipo para su pequeña barra
+                    const equipoPercentRaw = metaEquipo > 0 ? (dfts / metaEquipo) : 0;
+                    const equipoPercent = Math.min(equipoPercentRaw * 100, 100);
+                    
+                    // Crear tarjeta del equipo
+                    const card = document.createElement('div');
+                    card.className = 'team-card';
+                    card.innerHTML = `
+                        <div class="team-name">${equipo}</div>
+                        <div class="team-stats">${dfts} / ${metaEquipo}</div>
+                        <div class="team-label">DFTs / Meta</div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${equipoPercent}%;"></div>
+                        </div>
+                    `;
+                    teamsContainer.appendChild(card);
+                }
+                
+                // Calcular progreso nacional para el arbolito
+                const rawPercent = totalMetaNacional > 0 ? (totalDFTs / totalMetaNacional) : 0;
+                const percent = Math.min(rawPercent, 1);
+                
+                // Animar el árbol
+                const maxHeight = 235;
+                const bottomY = 260;
+                
+                const fillHeight = maxHeight * percent;
+                const fillY = bottomY - fillHeight;
+                
+                document.getElementById('treeFill').setAttribute('height', fillHeight);
+                document.getElementById('treeFill').setAttribute('y', fillY);
+                document.getElementById('percent-text').innerText = (rawPercent * 100).toFixed(1) + '% de la Meta Nacional';
+                
+                // Encender la estrella si llegan a la meta nacional
+                if (rawPercent >= 1) {
+                    document.getElementById('star').setAttribute('fill', '#FFD700'); 
+                }
+                
+            } catch(err) {
+                console.error("Error al cargar los datos:", err);
+                document.getElementById('teams-container').innerHTML = `
+                    <div style="width: 100%; color: #ef4444; padding: 20px; background: rgba(239,68,68,0.1); border-radius: 8px;">
+                        No se pudieron cargar los datos. Revisa que el enlace CSV esté activo.
+                    </div>`;
+            }
+        }
+
+        // Cargar inmediatamente
+        loadData();
+        
+        // Refrescar automáticamente cada 3 minutos (180,000 milisegundos)
+        setInterval(loadData, 180000);
+    </script>
+</body>
+</html>
