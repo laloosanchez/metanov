@@ -124,10 +124,8 @@
     <div class="teams-grid" id="teams-container"></div>
 
     <script>
-        // Enlace CSV
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSfXQNcRKFTsyf4i5dmtN1GIyuU2N6Jr55mEHwq69xQhRazgIqCeCbWAgq_2ccpUncuQnPRcsc0K6xH/pub?output=csv';
 
-        // Diccionario de apodos
         const apodos = {
             "Alejandra de la Cruz Jimenez": "Ale de la Cruz",
             "Daniel Alejandro Jimenez Ventura": "Daniel",
@@ -152,10 +150,9 @@
                 
                 const data = await response.text();
                 
-                // CORRECCIÓN: Separar correctamente las filas y columnas
                 const rows = data.split('\n').map(row => row.split(',').map(item => item.replace(/(^"|"$)/g, '').trim()));
                 
-                let totalDFTs = 0;
+                let totalAcumulado = 0;
                 let totalMetaNacional = 0;
                 
                 const teamsContainer = document.getElementById('teams-container');
@@ -164,22 +161,23 @@
                 for (let i = 1; i < rows.length; i++) {
                     const rowData = rows[i];
                     
-                    if(!rowData || rowData.length < 4) continue;
+                    if(!rowData || rowData.length < 5) continue;
                     
                     const equipoOriginal = rowData[0] ? rowData[0].trim() : '';
-                    const dfts = parseInt(rowData[1]) || 0;
-                    const metaEquipo = parseInt(rowData[2]) || 0;
-                    const metaPeriodo = parseInt(rowData[3]) || 0;
+                    const dfts = parseInt(rowData[1]) || 0;           // Columna 2: Sigue alimentando las tarjetas
+                    const metaEquipo = parseInt(rowData[2]) || 0;     // Columna 3: Meta de la tarjeta
+                    const metaPeriodo = parseInt(rowData[3]) || 0;    // Columna 4: Meta Nacional
+                    const acumulado = parseInt(rowData[4]) || 0;      // Columna 5: NUEVA - Alimenta el árbol
                     
                     if(equipoOriginal === '' || metaPeriodo === 0) continue;
 
-                    totalDFTs += dfts;
+                    // Sumamos el ACUMULADO para el árbol nacional
+                    totalAcumulado += acumulado;
                     totalMetaNacional += metaPeriodo;
                     
                     const equipoPercentRaw = metaEquipo > 0 ? (dfts / metaEquipo) : 0;
                     const equipoPercent = Math.min(equipoPercentRaw * 100, 100);
                     
-                    // Traducción automática del nombre
                     const equipoMostrar = apodos[equipoOriginal] || equipoOriginal;
                     
                     const card = document.createElement('div');
@@ -195,34 +193,8 @@
                     teamsContainer.appendChild(card);
                 }
                 
-                const rawPercent = totalMetaNacional > 0 ? (totalDFTs / totalMetaNacional) : 0;
+                // El árbol ahora se calcula en base al Total Acumulado
+                const rawPercent = totalMetaNacional > 0 ? (totalAcumulado / totalMetaNacional) : 0;
                 const percent = Math.min(rawPercent, 1);
                 
                 const maxHeight = 235;
-                const bottomY = 260;
-                
-                const fillHeight = maxHeight * percent;
-                const fillY = bottomY - fillHeight;
-                
-                document.getElementById('treeFill').setAttribute('height', fillHeight);
-                document.getElementById('treeFill').setAttribute('y', fillY);
-                document.getElementById('percent-text').innerText = (rawPercent * 100).toFixed(1) + '%';
-                
-                if (rawPercent >= 1) {
-                    document.getElementById('star').setAttribute('fill', '#FFD700'); 
-                }
-                
-            } catch(err) {
-                console.error("Error al cargar los datos:", err);
-                document.getElementById('teams-container').innerHTML = `
-                    <div style="width: 100%; color: #ef4444; padding: 20px; background: rgba(239,68,68,0.1); border-radius: 8px;">
-                        No se pudieron cargar los datos.
-                    </div>`;
-            }
-        }
-
-        loadData();
-        setInterval(loadData, 180000);
-    </script>
-</body>
-</html>
