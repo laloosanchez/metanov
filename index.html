@@ -103,7 +103,6 @@
 
     <h1>Vacaciones Diciembre 🎄🎅</h1>
 
-    <!-- Árbol de Navidad Animado -->
     <div class="tree-container">
         <svg width="200" height="270" viewBox="0 0 200 270">
             <defs>
@@ -120,7 +119,6 @@
     <div class="percent-text" id="percent-text">Cargando...</div>
     <div class="target-number">1800</div>
 
-    <!-- Cuadros de los Equipos -->
     <div class="teams-grid" id="teams-container"></div>
 
     <script>
@@ -146,11 +144,12 @@
                 const timestamp = new Date().getTime();
                 const response = await fetch(`${CSV_URL}&t=${timestamp}`);
                 
-                if (!response.ok) throw new Error('Network response was not ok');
+                if (!response.ok) throw new Error('Error de conexión con el archivo (Network response was not ok)');
                 
                 const data = await response.text();
                 
-                const rows = data.split('\n').map(row => row.split(',').map(item => item.replace(/(^"|"$)/g, '').trim()));
+                // Lee las filas y elimina basura de espacios o saltos de línea invisibles
+                const rows = data.split(/\r?\n/).map(row => row.split(',').map(item => item.replace(/(^"|"$)/g, '').trim()));
                 
                 let totalAcumulado = 0;
                 let totalMetaNacional = 0;
@@ -158,23 +157,26 @@
                 const teamsContainer = document.getElementById('teams-container');
                 teamsContainer.innerHTML = '';
                 
+                // Empezamos desde 1 para saltar el encabezado de las columnas
                 for (let i = 1; i < rows.length; i++) {
                     const rowData = rows[i];
                     
+                    // Si la fila no tiene las 5 columnas, la ignoramos para que no rompa el código
                     if(!rowData || rowData.length < 5) continue;
                     
                     const equipoOriginal = rowData[0] ? rowData[0].trim() : '';
-                    const dfts = parseInt(rowData[1]) || 0;           // Columna 2: Sigue alimentando las tarjetas
-                    const metaEquipo = parseInt(rowData[2]) || 0;     // Columna 3: Meta de la tarjeta
-                    const metaPeriodo = parseInt(rowData[3]) || 0;    // Columna 4: Meta Nacional
-                    const acumulado = parseInt(rowData[4]) || 0;      // Columna 5: NUEVA - Alimenta el árbol
+                    const dfts = parseInt(rowData[1]) || 0;           // Col 2: Tarjetas
+                    const metaEquipo = parseInt(rowData[2]) || 0;     // Col 3: Tarjetas
+                    const metaPeriodo = parseInt(rowData[3]) || 0;    // Col 4: Meta Árbol
+                    const acumulado = parseInt(rowData[4]) || 0;      // Col 5: Progreso Árbol
                     
                     if(equipoOriginal === '' || metaPeriodo === 0) continue;
 
-                    // Sumamos el ACUMULADO para el árbol nacional
+                    // El árbol suma la columna 5 "Acumulado" y la columna 4 "Meta Periodo"
                     totalAcumulado += acumulado;
                     totalMetaNacional += metaPeriodo;
                     
+                    // Las tarjetas calculan en base a la columna 2 y 3
                     const equipoPercentRaw = metaEquipo > 0 ? (dfts / metaEquipo) : 0;
                     const equipoPercent = Math.min(equipoPercentRaw * 100, 100);
                     
@@ -193,8 +195,36 @@
                     teamsContainer.appendChild(card);
                 }
                 
-                // El árbol ahora se calcula en base al Total Acumulado
                 const rawPercent = totalMetaNacional > 0 ? (totalAcumulado / totalMetaNacional) : 0;
                 const percent = Math.min(rawPercent, 1);
                 
                 const maxHeight = 235;
+                const bottomY = 260;
+                
+                const fillHeight = maxHeight * percent;
+                const fillY = bottomY - fillHeight;
+                
+                document.getElementById('treeFill').setAttribute('height', fillHeight);
+                document.getElementById('treeFill').setAttribute('y', fillY);
+                document.getElementById('percent-text').innerText = (rawPercent * 100).toFixed(1) + '%';
+                
+                if (rawPercent >= 1) {
+                    document.getElementById('star').setAttribute('fill', '#FFD700'); 
+                }
+                
+            } catch(err) {
+                // Si algo falla, ahora sí te lo mostrará en pantalla en letras grandes
+                console.error(err);
+                document.getElementById('percent-text').innerText = 'Error';
+                document.getElementById('teams-container').innerHTML = `
+                    <div style="width: 100%; color: #ef4444; padding: 20px; background: rgba(239,68,68,0.1); border-radius: 8px;">
+                        <b>Error del sistema:</b> ${err.message}<br>Asegúrate de haber borrado todo el código viejo antes de pegar este nuevo.
+                    </div>`;
+            }
+        }
+
+        loadData();
+        setInterval(loadData, 180000);
+    </script>
+</body>
+</html>
